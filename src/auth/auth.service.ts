@@ -28,10 +28,7 @@ export class AuthService {
       });
 
       return {
-        statusCode: HttpStatus.CREATED,
-        data: {
-          token,
-        },
+        token,
       };
     } catch (err) {
       if (err.response.message.includes('duplicate')) {
@@ -103,10 +100,7 @@ export class AuthService {
       const token = this.signToken(userPayload);
 
       return {
-        statusCode: HttpStatus.CREATED,
-        data: {
-          token,
-        },
+        token,
       };
     } catch (err) {
       throw err;
