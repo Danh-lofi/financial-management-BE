@@ -1,14 +1,15 @@
+import { classes } from '@automapper/classes';
+import { AutomapperModule } from '@automapper/nestjs';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from './users/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CategoryModule } from './category/category.module';
-import { BudgetModule } from './budget/budget.module';
-
-import { TransactionModule } from './transaction/transaction.module';
 import { AuthModule } from './auth/auth.module';
+import { BudgetModule } from './budget/budget.module';
+import { CategoryModule } from './category/category.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [
@@ -27,6 +28,9 @@ import { AuthModule } from './auth/auth.module';
     BudgetModule,
     TransactionModule,
     AuthModule,
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

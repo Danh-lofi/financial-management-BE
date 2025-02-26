@@ -28,7 +28,7 @@ export class UserController {
     return this._usersService.create(createUserDto);
   }
 
-  @Get('getInfo')
+  @Get('/get-info')
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   async getInfo(@UserDecorator() user): Promise<User[]> {

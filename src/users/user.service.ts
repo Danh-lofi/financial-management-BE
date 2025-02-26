@@ -20,6 +20,6 @@ export class UsersService {
   }
 
   async findOne(username: string): Promise<User | undefined> {
-    return this._userModel.findOne({ phone: username }).exec();
+    return this._userModel.findOne({ username }).exec();
   }
 }

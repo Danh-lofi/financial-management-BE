@@ -1,3 +1,6 @@
+import IUser from '@/users/interfaces/user.interface';
+
 export class AuthDto {
-  token: string;
+  accessToken: string;
+  user: IUser;
 }
