@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -11,6 +12,12 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalInterceptors(new CustomResponseInterceptor());
   app.useGlobalInterceptors(new ErrorInterceptor());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Loại bỏ các field không có trong DTO
+      transform: true, // Tự động chuyển đổi kiểu dữ liệu
+    }),
+  );
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
     .setTitle('Financial Management API')

@@ -1,3 +1,4 @@
+import { AuthenticationGuard } from '@/auth/guards/auth.guard';
 import {
   Body,
   Controller,
@@ -5,15 +6,22 @@ import {
   Get,
   Param,
   Post,
-  Put,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CategoryService } from './category.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpsertCategoryDto } from './dto/create-category.dto';
 import { Category } from './schemas/category.schema';
 
 @ApiTags('categories')
 @Controller('categories')
+@ApiBearerAuth()
+@UseGuards(AuthenticationGuard)
 export class CategoryController {
   constructor(private readonly _categoryService: CategoryService) {}
 
@@ -22,9 +30,9 @@ export class CategoryController {
   @ApiResponse({ status: 201, description: 'The category has been created.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   async create(
-    @Body() createCategoryDto: CreateCategoryDto,
+    @Body() upsertCategoryDto: UpsertCategoryDto,
   ): Promise<Category> {
-    return this._categoryService.create(createCategoryDto);
+    return this._categoryService.upsert(upsertCategoryDto);
   }
 
   @Get()
@@ -40,17 +48,6 @@ export class CategoryController {
   @ApiResponse({ status: 404, description: 'Category not found.' })
   async findOne(@Param('id') id: string): Promise<Category | null> {
     return this._categoryService.findOne(id);
-  }
-
-  @Put(':id')
-  @ApiOperation({ summary: 'Update a category by ID' })
-  @ApiResponse({ status: 200, description: 'The category has been updated.' })
-  @ApiResponse({ status: 404, description: 'Category not found.' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateCategoryDto: Partial<CreateCategoryDto>,
-  ): Promise<Category | null> {
-    return this._categoryService.update(id, updateCategoryDto);
   }
 
   @Delete(':id')

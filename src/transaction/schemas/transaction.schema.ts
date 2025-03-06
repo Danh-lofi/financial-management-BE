@@ -1,20 +1,24 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { User } from '../../users/schemas/user.schema';
+import { v4 as uuidv4 } from 'uuid';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Category } from '../../category/schemas/category.schema';
+import { User } from '../../users/schemas/user.schema';
 
 export type TransactionDocument = Transaction & Document;
 
 @Schema()
 export class Transaction {
+  @Prop({ type: String, unique: true, default: uuidv4 })
+  id: string;
+
   @Prop({ required: true })
   description: string;
 
   @Prop({ required: true, type: Number })
   amount: number;
 
-  @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
-  category: Types.ObjectId;
+  @Prop({ type: String, ref: Category.name, required: true })
+  category: string;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   user: Types.ObjectId;

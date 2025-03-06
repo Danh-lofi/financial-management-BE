@@ -2,12 +2,14 @@ import { classes } from '@automapper/classes';
 import { AutomapperModule } from '@automapper/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BudgetModule } from './budget/budget.module';
 import { CategoryModule } from './category/category.module';
+import { ContextInterceptor } from './interceptor/request-context.interceptor';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './users/user.module';
 
@@ -33,6 +35,9 @@ import { UserModule } from './users/user.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_INTERCEPTOR, useClass: ContextInterceptor },
+  ],
 })
 export class AppModule {}

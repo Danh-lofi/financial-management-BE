@@ -68,11 +68,13 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const { username, name } = user;
+      const { username, name, mail, phone } = user;
 
       const userPayload: IUser = {
         username,
         name,
+        mail,
+        phone,
       };
 
       const accessToken = this.signToken(userPayload);

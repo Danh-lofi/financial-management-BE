@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { RequestContextService } from '@/context/request-context';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpsertCategoryDto } from './dto/create-category.dto';
 import { Category, CategoryDocument } from './schemas/category.schema';
+// import { RequestContextService } from '@/context/request-context';
 
 @Injectable()
 export class CategoryService {
@@ -10,29 +12,57 @@ export class CategoryService {
     @InjectModel(Category.name) private _categoryModel: Model<CategoryDocument>,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const createdCategory = new this._categoryModel(createCategoryDto);
-    return createdCategory.save();
+  async upsert(upsertCategoryDto: UpsertCategoryDto): Promise<Category> {
+    try {
+      const username = RequestContextService.getUsername();
+      const { id, ...rest } = upsertCategoryDto;
+      const data = {
+        ...rest,
+        user: username,
+      };
+      return await this._categoryModel.findOneAndUpdate(
+        { id, user: username },
+        data,
+        {
+          new: true,
+          upsert: true,
+        },
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async findAll(): Promise<Category[]> {
-    return this._categoryModel.find().exec();
-  }
-
-  async findOne(id: string): Promise<Category | null> {
-    return this._categoryModel.findById(id).exec();
-  }
-
-  async update(
-    id: string,
-    updateCategoryDto: Partial<CreateCategoryDto>,
-  ): Promise<Category | null> {
+    const username = RequestContextService.getUsername();
     return this._categoryModel
-      .findByIdAndUpdate(id, updateCategoryDto, { new: true })
+      .find({
+        user: username,
+      })
       .exec();
   }
 
+  async findOne(id: string): Promise<Category | null> {
+    const username = RequestContextService.getUsername();
+    return this._categoryModel.findOne({ id, user: username }).exec();
+  }
+
   async remove(id: string): Promise<Category | null> {
-    return this._categoryModel.findByIdAndDelete(id).exec();
+    const username = RequestContextService.getUsername();
+    const selectedCategory = await this._categoryModel
+      .find({
+        id,
+        user: username,
+      })
+      .exec();
+    if (!selectedCategory) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+    return this._categoryModel
+      .findOneAndDelete({
+        id,
+        user: username,
+      })
+      .exec();
   }
 }
