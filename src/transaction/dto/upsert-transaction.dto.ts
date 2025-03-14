@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpsertTransactionDto {
@@ -22,6 +29,7 @@ export class UpsertTransactionDto {
     example: '100000',
     description: 'Số tiền giao dịch',
   })
+  @Transform(({ value: amount }) => parseFloat(amount))
   @IsNumber()
   @IsNotEmpty()
   amount: number;
@@ -33,4 +41,12 @@ export class UpsertTransactionDto {
   @IsString()
   @IsNotEmpty()
   category: string;
+
+  @ApiProperty({
+    example: new Date(),
+    description: 'Thời gian giao dịch',
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  transactionDate: Date;
 }

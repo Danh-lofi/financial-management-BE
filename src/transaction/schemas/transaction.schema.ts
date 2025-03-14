@@ -23,6 +23,9 @@ export class Transaction {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   user: Types.ObjectId;
 
+  @Prop({ default: Date.now, type: Date })
+  transactionDate: Date;
+
   @Prop({ default: Date.now })
   created_at: Date;
 
