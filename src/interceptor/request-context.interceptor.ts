@@ -1,5 +1,4 @@
 import { Observable, tap } from 'rxjs';
-import { RequestContextService } from '@/context/request-context';
 import IUser from '@/users/interfaces/user.interface';
 import {
   CallHandler,
@@ -7,6 +6,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { RequestContextService } from '../context/request-context';
 
 @Injectable()
 export class ContextInterceptor implements NestInterceptor {
