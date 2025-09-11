@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Category } from '../../category/schemas/category.schema';
 import { User } from '../../users/schemas/user.schema';
+import { TransactionType } from '../enums/transaction-type.enum';
 
 export type TransactionDocument = Transaction & Document;
 
@@ -16,6 +17,14 @@ export class Transaction {
 
   @Prop({ required: true, type: Number })
   amount: number;
+
+  @Prop({
+    type: String,
+    enum: TransactionType,
+    required: true,
+    default: TransactionType.EXPENSE,
+  })
+  transactionType: TransactionType;
 
   @Prop({ type: String, ref: Category.name, required: true })
   category: string;

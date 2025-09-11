@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
@@ -17,6 +18,7 @@ import {
 import { UpsertTransactionDto } from './dto/upsert-transaction.dto';
 import { Transaction } from './schemas/transaction.schema';
 import { AuthenticationGuard } from '@/auth/guards/auth.guard';
+import { FindTransactionDto } from './dto/find-transaction.dto';
 
 @ApiTags('transactions')
 @Controller('transactions')
@@ -41,8 +43,8 @@ export class TransactionController {
   @Get()
   @ApiOperation({ summary: 'Get all transaction' })
   @ApiResponse({ status: 200, description: 'Return all transaction.' })
-  async findAll(): Promise<Transaction[]> {
-    return this._transactionService.findAll();
+  async findAll(@Query() query: FindTransactionDto): Promise<Transaction[]> {
+    return this._transactionService.findAll(query);
   }
 
   @Get(':id')

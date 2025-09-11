@@ -1,9 +1,10 @@
 import { RequestContextService } from '@/context/request-context';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { UpsertTransactionDto } from './dto/upsert-transaction.dto';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
+import { FindTransactionDto } from './dto/find-transaction.dto';
 // import { RequestContextService } from '@/context/request-context';
 
 @Injectable()
@@ -32,13 +33,38 @@ export class TransactionService {
     );
   }
 
-  async findAll(): Promise<Transaction[]> {
+  async findAll(query: FindTransactionDto): Promise<Transaction[]> {
     const username = RequestContextService.getUsername();
-    return this._transactionModel
-      .find({
-        user: username,
-      })
-      .exec();
+    const filter: FilterQuery<Transaction> = {
+      user: username,
+    };
+
+    if (query.transactionType) {
+      filter['transactionType'] = query.transactionType;
+    }
+    if (query.categories?.length) {
+      filter.category = { $in: query.categories };
+    }
+    if (query.minAmount || query.maxAmount) {
+      filter.amount = {};
+      if (query.minAmount) filter.amount.$gte = query.minAmount;
+      if (query.maxAmount) filter.amount.$lte = query.maxAmount;
+    }
+    if (query.fromDate || query.toDate) {
+      filter.transactionDate = {};
+      if (query.fromDate)
+        filter.transactionDate.$gte = new Date(query.fromDate);
+      if (query.toDate) {
+        // get last time of the day
+        filter.transactionDate.$lte = new Date(query.toDate).setHours(
+          23,
+          59,
+          59,
+          999,
+        );
+      }
+    }
+    return this._transactionModel.find(filter).exec();
   }
 
   async findOne(id: string): Promise<Transaction | null> {
