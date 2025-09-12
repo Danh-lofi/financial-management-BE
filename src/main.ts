@@ -35,6 +35,7 @@ async function bootstrap() {
   app.enableCors({
     origin: ['http://localhost:3000', 'https://fe-fm.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
   await app.listen(port);
