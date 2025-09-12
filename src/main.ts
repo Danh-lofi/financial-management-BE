@@ -32,11 +32,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   const port = configService.get<number>('PORT');
-  app.enableCors({
-    origin: ['http://localhost:3000', 'https://fe-fm.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+  // app.enableCors({
+  //   origin: ['http://localhost:3000', 'https://fe-fm.vercel.app'],
+  //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  //   allowedHeaders: ['Content-Type', 'Authorization'],
+  // });
   await app.listen(port);
 }
 bootstrap();
