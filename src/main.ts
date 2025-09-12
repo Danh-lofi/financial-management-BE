@@ -10,7 +10,9 @@ import { CustomResponseInterceptor } from './interceptor/custom-response.interce
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  });
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalInterceptors(new CustomResponseInterceptor());
   app.useGlobalInterceptors(new ErrorInterceptor());
@@ -32,12 +34,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   const port = configService.get<number>('PORT');
-  app.enableCors({
-    origin: 'https://fe-fm.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true,
-  });
   await app.listen(port);
 }
 bootstrap();
