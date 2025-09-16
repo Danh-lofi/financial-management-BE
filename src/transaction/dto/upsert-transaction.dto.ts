@@ -1,15 +1,16 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsDateString,
+  IsDate,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsEnum,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { format, parse } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { TransactionType } from '../enums/transaction-type.enum';
-
 export class UpsertTransactionDto {
   @ApiPropertyOptional({
     example: '60e6a3e5e3b7b8f5f8b3b3c5',
@@ -52,10 +53,18 @@ export class UpsertTransactionDto {
   transactionType: TransactionType;
 
   @ApiProperty({
-    example: new Date(),
-    description: 'Thời gian giao dịch',
+    example: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+    description: 'Ngày phát hành lệnh',
   })
-  @IsDateString()
   @IsNotEmpty()
+  @IsDate({
+    message: ({ property }) =>
+      `${property} must be in the format YYYY-MM-DD HH:mm:ss and represent a valid date`,
+  })
+  @Transform(({ value }) =>
+    value
+      ? fromZonedTime(parse(value, 'yyyy-MM-dd HH:mm:ss', new Date()), '+07:00')
+      : value,
+  )
   transactionDate: Date;
 }
