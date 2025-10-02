@@ -12,6 +12,7 @@ import { CategoryModule } from './category/category.module';
 import { ContextInterceptor } from './interceptor/request-context.interceptor';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './users/user.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserModule } from './users/user.module';
     AutomapperModule.forRoot({
       strategyInitializer: classes(),
     }),
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [

@@ -5,6 +5,9 @@ import { FilterQuery, Model } from 'mongoose';
 import { UpsertTransactionDto } from './dto/upsert-transaction.dto';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { FindTransactionDto } from './dto/find-transaction.dto';
+import { TransactionType } from './enums/transaction-type.enum';
+import { ITransactionReport } from '@/shared/dto/transaction-report.dto';
+import { ITopCategoriesTransactionReport } from '@/shared/dto/top-categories-transaction-report.dto';
 // import { RequestContextService } from '@/context/request-context';
 
 @Injectable()
@@ -33,7 +36,7 @@ export class TransactionService {
     );
   }
 
-  async findAll(query: FindTransactionDto): Promise<Transaction[]> {
+  async findAll(query?: FindTransactionDto): Promise<Transaction[]> {
     const username = RequestContextService.getUsername();
     const filter: FilterQuery<Transaction> = {
       user: username,
@@ -89,5 +92,91 @@ export class TransactionService {
         user: username,
       })
       .exec();
+  }
+
+  async getTotalTransactionGroupByTransactionType(): Promise<ITransactionReport> {
+    const username = RequestContextService.getUsername();
+
+    const result = await this._transactionModel.aggregate([
+      {
+        $match: {
+          user: username,
+        },
+      },
+      {
+        $facet: {
+          income: [
+            { $match: { transactionType: TransactionType.INCOME } },
+            {
+              $group: {
+                _id: null,
+                total: { $sum: '$amount' },
+              },
+            },
+          ],
+          expense: [
+            { $match: { transactionType: TransactionType.EXPENSE } },
+            {
+              $group: {
+                _id: null,
+                total: { $sum: '$amount' },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          totalIncome: { $ifNull: [{ $arrayElemAt: ['$income.total', 0] }, 0] },
+          totalExpense: {
+            $ifNull: [{ $arrayElemAt: ['$expense.total', 0] }, 0],
+          },
+        },
+      },
+    ]);
+
+    return result[0] || { totalIncome: 0, totalExpense: 0 };
+  }
+
+  async getExpenseByCategory(): Promise<ITopCategoriesTransactionReport[]> {
+    const username = RequestContextService.getUsername();
+    return await this._transactionModel.aggregate([
+      {
+        $match: {
+          user: username,
+          transactionType: TransactionType.EXPENSE,
+        },
+      },
+      {
+        $group: {
+          _id: '$category',
+          totalAmount: { $sum: '$amount' },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: '_id',
+          foreignField: 'id',
+          as: 'category',
+        },
+      },
+      {
+        $unwind: '$category',
+      },
+      {
+        $project: {
+          _id: 0,
+          categoryId: '$_id',
+          categoryName: '$category.name',
+          totalAmount: 1,
+          count: 1,
+        },
+      },
+      {
+        $sort: { totalAmount: -1 },
+      },
+    ]);
   }
 }
