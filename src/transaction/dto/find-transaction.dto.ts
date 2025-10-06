@@ -1,5 +1,5 @@
 // dto/find-transaction.dto.ts
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsEnum,
@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { TransactionType } from '../enums/transaction-type.enum';
+import { Transaction } from '../schemas/transaction.schema';
 
 export class FindTransactionDto {
   @ApiPropertyOptional({
@@ -54,4 +55,23 @@ export class FindTransactionDto {
   @ApiPropertyOptional({ description: 'To date (ISO string: YYYY-MM-DD)' })
   @IsOptional()
   toDate?: string;
+}
+
+export class TransactionTotalDto {
+  @ApiProperty()
+  transactionType: string;
+
+  @ApiProperty()
+  totalAmount: number;
+
+  @ApiProperty()
+  count: number;
+}
+
+export class TransactionListResponseDto {
+  @ApiProperty({ type: [Transaction] })
+  transactions: Transaction[];
+
+  @ApiProperty({ type: [TransactionTotalDto] })
+  totals: TransactionTotalDto[];
 }

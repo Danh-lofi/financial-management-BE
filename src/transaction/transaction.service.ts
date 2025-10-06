@@ -4,7 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { UpsertTransactionDto } from './dto/upsert-transaction.dto';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
-import { FindTransactionDto } from './dto/find-transaction.dto';
+import {
+  FindTransactionDto,
+  TransactionListResponseDto,
+} from './dto/find-transaction.dto';
 import { TransactionType } from './enums/transaction-type.enum';
 import { ITransactionReport } from '@/shared/dto/transaction-report.dto';
 import { ITopCategoriesTransactionReport } from '@/shared/dto/top-categories-transaction-report.dto';
@@ -36,7 +39,9 @@ export class TransactionService {
     );
   }
 
-  async findAll(query?: FindTransactionDto): Promise<Transaction[]> {
+  async findAll(
+    query?: FindTransactionDto,
+  ): Promise<TransactionListResponseDto> {
     const username = RequestContextService.getUsername();
     const filter: FilterQuery<Transaction> = {
       user: username,
@@ -58,16 +63,33 @@ export class TransactionService {
       if (query.fromDate)
         filter.transactionDate.$gte = new Date(query.fromDate);
       if (query.toDate) {
-        // get last time of the day
-        filter.transactionDate.$lte = new Date(query.toDate).setHours(
-          23,
-          59,
-          59,
-          999,
-        );
+        const to = new Date(query.toDate);
+        to.setHours(23, 59, 59, 999);
+        filter.transactionDate.$lte = to;
       }
     }
-    return this._transactionModel.find(filter).exec();
+    const [transactions, totals] = await Promise.all([
+      this._transactionModel.find(filter).sort({ transactionDate: -1 }).exec(),
+      this._transactionModel.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: '$transactionType',
+            totalAmount: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            transactionType: '$_id',
+            totalAmount: 1,
+            count: 1,
+          },
+        },
+      ]),
+    ]);
+    return { transactions, totals };
   }
 
   async findOne(id: string): Promise<Transaction | null> {

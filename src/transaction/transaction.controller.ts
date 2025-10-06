@@ -18,7 +18,10 @@ import {
 import { UpsertTransactionDto } from './dto/upsert-transaction.dto';
 import { Transaction } from './schemas/transaction.schema';
 import { AuthenticationGuard } from '@/auth/guards/auth.guard';
-import { FindTransactionDto } from './dto/find-transaction.dto';
+import {
+  FindTransactionDto,
+  TransactionListResponseDto,
+} from './dto/find-transaction.dto';
 
 @ApiTags('transactions')
 @Controller('transactions')
@@ -43,7 +46,9 @@ export class TransactionController {
   @Get()
   @ApiOperation({ summary: 'Get all transaction' })
   @ApiResponse({ status: 200, description: 'Return all transaction.' })
-  async findAll(@Query() query: FindTransactionDto): Promise<Transaction[]> {
+  async findAll(
+    @Query() query: FindTransactionDto,
+  ): Promise<TransactionListResponseDto> {
     return this._transactionService.findAll(query);
   }
 
